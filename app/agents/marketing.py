@@ -2,6 +2,7 @@ import time
 import structlog
 from app.models.schemas import AgentName
 from app.services.llm import stream_completion
+from app.services.local_ai import generate_marketing as local_generate_marketing
 from app.services.streaming import push_chunk
 from app.services.supabase import create_agent_output, update_agent_output, set_agent_error
 
@@ -74,9 +75,15 @@ Produce a SPECIFIC marketing strategy for THIS exact product. Every channel, tac
 
     full_output = ""
     try:
-        async for text in stream_completion(MARKETING_SYSTEM_PROMPT, user_msg, preferred_provider="groq"):
-            full_output += text
-            await push_chunk(project_id, agent_name, text, done=False)
+        try:
+            async for text in stream_completion(MARKETING_SYSTEM_PROMPT, user_msg, preferred_provider="groq"):
+                full_output += text
+                await push_chunk(project_id, agent_name, text, done=False)
+        except RuntimeError:
+            logger.info("marketing_fallback_local", project_id=project_id)
+            async for text in local_generate_marketing(idea, founder_output, pm_output):
+                full_output += text
+                await push_chunk(project_id, agent_name, text, done=False)
 
         elapsed = time.time() - start
         logger.info("marketing_done", project_id=project_id, elapsed=f"{elapsed:.1f}s", tokens=len(full_output))

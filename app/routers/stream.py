@@ -59,11 +59,10 @@ async def stream_project(project_id: str, request: Request, token: str | None = 
     # Support auth via query param (EventSource cannot send custom headers)
     user_id = getattr(request.state, "user_id", None)
 
-    if user_id is None and token:
-        user_id = await _validate_token(token)
-
-    if user_id is None and get_settings().demo_mode:
+    if get_settings().demo_mode:
         user_id = "demo-user-000"
+    elif user_id is None and token:
+        user_id = await _validate_token(token)
 
     if user_id is None:
         return JSONResponse(

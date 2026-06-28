@@ -66,6 +66,8 @@ def get_supabase():
 # ---------------------------------------------------------------------------
 
 async def create_project(user_id: str, idea: str, domain: str = "") -> dict:
+    agent_names = ["founder", "pm", "uiux", "marketing", "market_analyst", "investor"]
+
     if _is_demo():
         project_id = str(uuid4())
         now = datetime.now(timezone.utc).isoformat()
@@ -78,7 +80,10 @@ async def create_project(user_id: str, idea: str, domain: str = "") -> dict:
             "created_at": now,
         }
         _demo_projects[project_id] = project
-        _demo_agents[project_id] = []
+        _demo_agents[project_id] = [
+            {"project_id": project_id, "agent_name": name, "status": "waiting", "output": "", "completed_at": None}
+            for name in agent_names
+        ]
         logger.info("demo_project_created", project_id=project_id)
         _save_demo_db()
         return project
@@ -90,7 +95,16 @@ async def create_project(user_id: str, idea: str, domain: str = "") -> dict:
         "domain": domain,
         "status": "processing",
     }).execute()
-    logger.info("project_created", project_id=result.data[0]["id"], user_id=user_id)
+    project_id = result.data[0]["id"]
+
+    for name in agent_names:
+        sb.table("agent_outputs").insert({
+            "project_id": project_id,
+            "agent_name": name,
+            "status": "waiting",
+        }).execute()
+
+    logger.info("project_created", project_id=project_id, user_id=user_id)
     return result.data[0]
 
 
@@ -153,6 +167,11 @@ async def list_user_projects(user_id: str, limit: int = 50) -> list[dict]:
 
 async def create_agent_output(project_id: str, agent_name: str) -> dict:
     if _is_demo():
+        for a in _demo_agents.get(project_id, []):
+            if a["agent_name"] == agent_name:
+                a["status"] = "running"
+                _save_demo_db()
+                return a
         entry = {
             "project_id": project_id,
             "agent_name": agent_name,
@@ -165,6 +184,11 @@ async def create_agent_output(project_id: str, agent_name: str) -> dict:
         return entry
 
     sb = get_supabase()
+    existing = sb.table("agent_outputs").select("id").eq("project_id", project_id).eq("agent_name", agent_name).execute()
+    if existing.data:
+        sb.table("agent_outputs").update({"status": "running"}).eq("id", existing.data[0]["id"]).execute()
+        return {"project_id": project_id, "agent_name": agent_name, "status": "running", "output": ""}
+
     result = sb.table("agent_outputs").insert({
         "project_id": project_id,
         "agent_name": agent_name,
