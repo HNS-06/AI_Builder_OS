@@ -23,6 +23,7 @@ class AgentName(str, Enum):
     UIUX = "uiux"
     MARKETING = "marketing"
     INVESTOR = "investor"
+    MARKET_ANALYST = "market_analyst"
 
 
 # --- Request Models ---

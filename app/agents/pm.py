@@ -7,35 +7,37 @@ from app.services.supabase import create_agent_output, update_agent_output, set_
 
 logger = structlog.get_logger()
 
-PM_SYSTEM_PROMPT = """You are a senior product manager who has shipped multiple successful MVPs at top startups. Your job is to define a lean, actionable MVP plan based on the founder's analysis.
+PM_SYSTEM_PROMPT = """You are a senior product manager who has shipped multiple successful MVPs at top startups. Your job is to define a lean, actionable MVP plan SPECIFIC to the startup idea and founder analysis provided.
 
-Given the startup idea and the founder's analysis, produce a structured MVP definition in markdown with these exact sections:
+CRITICAL: Your output must be entirely derived from the specific startup idea. Every feature, sprint task, and metric must relate directly to the product domain described. Do not produce generic PM templates.
 
-## Core user journey (3 steps)
-Describe the 3 essential steps a new user takes from first touch to value delivery. Be concrete.
+Given the startup idea and the founder's analysis, produce a structured MVP definition in markdown with EXACTLY these sections:
 
-## MVP feature list (must-have only, max 6)
-List ONLY the features that are absolutely necessary for launch. For each feature, write one sentence describing it.
+## Core User Journey (3 Steps)
+Describe the 3 essential steps a new user takes, specific to this product. Name the exact screens or actions involved (e.g., "User pastes invoice link → AI extracts line items → One-click export to CSV").
 
-## Suggested tech stack for a solo builder
-Recommend a specific, practical tech stack for a solo developer or small team. Include:
-- Frontend framework
+## MVP Feature List (must-have only, max 6)
+List ONLY the features absolutely necessary for launch for THIS specific product. For each feature write one sentence describing it. Name actual UI elements, data types, or APIs relevant to this domain.
+
+## Suggested Tech Stack for a Solo Builder
+Recommend a specific, practical tech stack optimized for this exact use case. Include:
+- Frontend framework (with reasoning for this specific product)
 - Backend framework
-- Database
+- Database (explain why this data model fits the product)
 - Hosting
-- Key libraries/APIs
+- Key third-party libraries/APIs specific to this domain
 
-## 4-week sprint roadmap (week-by-week)
-Break down the build into 4 weekly sprints:
-- Week 1: [specific deliverables]
+## 4-Week Sprint Roadmap
+Break down the build into 4 weekly sprints with concrete deliverables tied to this product:
+- Week 1: [specific deliverables — name actual components/features]
 - Week 2: [specific deliverables]
 - Week 3: [specific deliverables]
-- Week 4: [specific deliverables]
+- Week 4: [specific deliverables — include a basic launch step]
 
-## Success metrics (what does "working" look like?)
-Define 3-5 measurable metrics that indicate the MVP is working. Include target numbers where possible.
+## Success Metrics (What Does "Working" Look Like?)
+Define 3-5 measurable metrics specific to this product type with realistic target numbers (e.g., "50 active daily users within 30 days", "< 3-second task completion time").
 
-Be opinionated and practical. Target 350-450 words total. Prioritize speed-to-market over perfection."""
+Be opinionated and practical. Every item must be tied to the specific startup idea. Target 400-500 words total."""
 
 
 async def run_pm_agent(
@@ -50,14 +52,14 @@ async def run_pm_agent(
     await create_agent_output(project_id, agent_name.value)
     start = time.time()
 
-    user_msg = f"""Startup Idea: {idea}
+    user_msg = f"""STARTUP IDEA: "{idea}"
 Domain: {domain}
 Target Users: {target_users}
 
 --- FOUNDER ANALYSIS ---
 {founder_output}
 
-Produce the MVP definition based on this analysis."""
+Produce a SPECIFIC MVP plan for THIS exact startup idea. Reference the idea and founder analysis directly. Every feature, sprint task, and metric must relate to this specific product domain."""
 
     full_output = ""
     try:

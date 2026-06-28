@@ -59,7 +59,8 @@ const AGENT_NAME_MAP: Record<string, string> = {
   founder: "Venture Planner",
   pm: "Product Architect",
   uiux: "UX Designer",
-  marketing: "Market Analyst",
+  marketing: "Growth Strategist",
+  market_analyst: "Market Analyst",
   investor: "Pitch Coach",
 };
 

@@ -31,58 +31,69 @@ export default function D3RadarChart({ project }: D3RadarChartProps) {
   const [dimensions, setDimensions] = useState({ width: 420, height: 320 });
   const [activeDimension, setActiveDimension] = useState<string | null>(null);
 
-  // Generate consistent deterministic scores based on the project's details
-  const getDeterministicScore = (seed: string, offset: number, min = 70, max = 95): number => {
-    let hash = 0;
-    const combinedSeed = seed + project.id;
-    for (let i = 0; i < combinedSeed.length; i++) {
-      hash = combinedSeed.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const val = Math.abs((hash + offset) % (max - min + 1));
-    return min + val;
-  };
+  // Parse real scores from Market Analyst agent output
+  const marketOutput = project.agents.find((a) => a.name === "Market Analyst")?.output || "";
+  const founderOutput = project.agents.find((a) => a.name === "Venture Planner")?.output || "";
+  const combinedOutput = marketOutput + "\n" + founderOutput;
 
-  const seedText = project.idea || "Startup Core";
+  const parseScore = (text: string, keywords: string[], defaultMin: number, defaultMax: number): number => {
+    const lines = text.split("\n");
+    for (const keyword of keywords) {
+      const line = lines.find((l) => l.toLowerCase().includes(keyword.toLowerCase()));
+      if (line) {
+        const match = line.match(/(\d{1,3})\s*\/\s*100/);
+        if (match) return Math.min(100, Math.max(1, parseInt(match[1])));
+        const pctMatch = line.match(/(\d{1,3})%/);
+        if (pctMatch) return Math.min(100, Math.max(1, parseInt(pctMatch[1])));
+      }
+    }
+    // Fallback: derive from text signals
+    const positiveSignals = ["strong", "high", "excellent", "significant", "large", "growing", "massive"].filter((s) =>
+      combinedOutput.toLowerCase().includes(s)
+    ).length;
+    const base = defaultMin + Math.round(((defaultMax - defaultMin) * positiveSignals) / 7);
+    return Math.min(defaultMax, Math.max(defaultMin, base));
+  };
 
   const radarData: RadarDimension[] = [
     {
       key: "market",
       label: "Market Potential",
-      score: getDeterministicScore(seedText, 12, 72, 96),
+      score: parseScore(combinedOutput, ["pain intensity", "market potential", "total addressable"], 68, 94),
       description: "Addressable market depth, urgency of buyer pain points, and competitive asymmetry.",
-      color: "#7C6EF8", // Core branding violet
+      color: "#7C6EF8",
       icon: TrendingUp
     },
     {
       key: "scalability",
       label: "Scalability",
-      score: getDeterministicScore(seedText, 34, 70, 94),
+      score: parseScore(combinedOutput, ["scalab", "usage frequency", "growth"], 65, 92),
       description: "Operating leverage, ease of distribution, and potential to expand into adjacent categories.",
-      color: "#10B981", // Emerald
+      color: "#10B981",
       icon: Maximize
     },
     {
       key: "technical",
       label: "Technical Feasibility",
-      score: getDeterministicScore(seedText, 56, 75, 95),
+      score: parseScore(combinedOutput, ["technical", "budget availability", "tech stack"], 70, 94),
       description: "Execution complexity, timeline risk, availability of standard API wedges, and moat creation.",
-      color: "#3B82F6", // Blue
+      color: "#3B82F6",
       icon: Cpu
     },
     {
       key: "funding",
       label: "Funding Readiness",
-      score: getDeterministicScore(seedText, 78, 68, 92),
+      score: parseScore(combinedOutput, ["funding", "willingness to pay", "revenue model", "investor"], 65, 92),
       description: "Investor thesis alignment, clear path to seed triggers, and attractive unit economics margin.",
-      color: "#F59E0B", // Amber
+      color: "#F59E0B",
       icon: Coins
     },
     {
       key: "team",
-      label: "Team Synergy",
-      score: getDeterministicScore(seedText, 90, 80, 98),
-      description: "Velocity of execution, domain expertise match, and talent compounding potential.",
-      color: "#EC4899", // Pink
+      label: "Overall Viability",
+      score: parseScore(combinedOutput, ["overall validation", "overall score", "viability"], 70, 96),
+      description: "Combined assessment of market timing, execution feasibility, and competitive positioning.",
+      color: "#EC4899",
       icon: UsersIcon
     }
   ];
@@ -99,6 +110,7 @@ export default function D3RadarChart({ project }: D3RadarChartProps) {
   };
 
   const ratingInfo = getRatingInfo(averageScore);
+
 
   // Handle Resize
   useEffect(() => {

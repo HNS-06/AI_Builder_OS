@@ -211,7 +211,8 @@ export default function App() {
             founder: "Venture Planner",
             pm: "Product Architect",
             uiux: "UX Designer",
-            marketing: "Market Analyst",
+            marketing: "Growth Strategist",
+            market_analyst: "Market Analyst",
             investor: "Pitch Coach",
           };
           setProject((prev) => {
@@ -229,7 +230,8 @@ export default function App() {
             founder: "Venture Planner",
             pm: "Product Architect",
             uiux: "UX Designer",
-            marketing: "Market Analyst",
+            marketing: "Growth Strategist",
+            market_analyst: "Market Analyst",
             investor: "Pitch Coach",
           };
           setProject((prev) => {
@@ -381,134 +383,16 @@ export default function App() {
     );
   }
 
-  // 1. LANDING PAGE RENDER
+  // 1. REDIRECT LANDING TO DASHBOARD — landing page removed
   if (route === "landing") {
-    return (
-      <div className="relative min-h-screen bg-[#0A0A0A] overflow-hidden">
-        {/* Aesthetic Swiss background grid structure */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#141414_1px,transparent_1px),linear-gradient(to_bottom,#141414_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none z-0" />
-
-        {/* Dynamic glow ambient violet vector orb */}
-        <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#7C6EF8]/5 blur-[120px] rounded-full glowing-orb pointer-events-none z-0" />
-
-        {/* Minimalist Top Nav Header */}
-        <header className="relative z-10 max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#7C6EF8]/10 border border-[#7C6EF8]/20">
-              <Compass className="w-4 h-4 text-[#7C6EF8]" />
-            </div>
-            <span className="text-sm font-bold font-display tracking-tight text-white">
-              VentureOS
-            </span>
-          </div>
-
-          <button
-            onClick={handleReturnToDashboard}
-            className="flex items-center gap-1 text-xs font-semibold tracking-tight font-display text-zinc-400 hover:text-[#7C6EF8] transition-colors duration-200"
-          >
-            <span>Console Panel</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </header>
-
-        {/* Master Hero Block */}
-        <main className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-24 flex flex-col items-center">
-          <div className="max-w-3xl text-center flex flex-col items-center mb-12">
-            {/* Upper Badge */}
-            <FadeUp delay={0.1}>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-white/5 text-[10px] font-mono font-medium text-[#7C6EF8] tracking-widest uppercase mb-6 shadow-sm">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Enterprise incubation system</span>
-              </div>
-            </FadeUp>
-
-            {/* Main display headline */}
-            <FadeUp delay={0.2}>
-              <h1 className="text-4xl sm:text-6xl font-extrabold font-display tracking-tight leading-[1.1] text-zinc-100 max-w-xl sm:max-w-2xl">
-                Turn your idea into a startup.{" "}
-                <span className="text-[#7C6EF8]">In 60 seconds.</span>
-              </h1>
-            </FadeUp>
-
-            {/* Sub-description */}
-            <FadeUp delay={0.3}>
-              <p className="mt-6 text-sm sm:text-base text-zinc-400 font-sans max-w-lg leading-relaxed">
-                Describe your concept. Our cognitive orchestrator launches 5 tailored expert agents to generate a complete institutional package instantly.
-              </p>
-            </FadeUp>
-          </div>
-
-          {/* Centered Premium Input Bar */}
-          <FadeUp delay={0.4} className="w-full">
-            <IdeaInput onSubmit={handleCreateProject} isLoading={isLoading} />
-          </FadeUp>
-
-          {/* Visual Grid Scroll Reveal Cards */}
-          <section className="w-full max-w-6xl mt-28 border-t border-white/5 pt-16">
-            <FadeUp delay={0.5} className="text-center mb-12">
-              <h2 className="text-lg font-bold font-display tracking-tight text-zinc-300">
-                Cognitive Orchestration Suite
-              </h2>
-              <p className="text-xs text-zinc-500 font-mono uppercase mt-1 tracking-wider">
-                Five autonomous analysts in parallel
-              </p>
-            </FadeUp>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                {
-                  icon: Cpu,
-                  title: "Venture Planner",
-                  desc: "Drafts comprehensive business theses, structural problems, value matrix models, and core solutions.",
-                },
-                {
-                  icon: Layers,
-                  title: "Market Analyst",
-                  desc: "Calculates total market scope (TAM/SAM/SOM), target audience demographic segments, and competitor models.",
-                },
-                {
-                  icon: MapPin,
-                  title: "Product Architect",
-                  desc: "Designs visual node architecture specs, detailed MVP implementation blocks, and custom weekly sprints.",
-                },
-              ].map((card, idx) => (
-                <FadeUp
-                  key={idx}
-                  delay={0.5 + idx * 0.1}
-                  className="p-6 rounded-xl bg-zinc-950/40 border border-white/5 hover:border-[#7C6EF8]/20 transition-all duration-300 hover:translate-y-[-2px] group"
-                >
-                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-zinc-900 border border-white/10 text-zinc-400 group-hover:text-[#7C6EF8] transition-colors mb-4">
-                    <card.icon className="w-5 h-5" />
-                  </div>
-                  <h3 className="text-sm font-semibold text-zinc-200 font-display">
-                    {card.title}
-                  </h3>
-                  <p className="text-xs text-zinc-400 mt-2 leading-relaxed font-sans">
-                    {card.desc}
-                  </p>
-                </FadeUp>
-              ))}
-            </div>
-          </section>
-        </main>
-
-        {/* Pure Minimalist Footer */}
-        <footer className="relative z-10 border-t border-white/5 mt-16 py-8">
-          <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <span className="text-[10px] text-zinc-600 font-mono">
-              © 2026 VentureOS Inc. All rights reserved.
-            </span>
-            <span className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-mono">
-              <Heart className="w-3 h-3 text-red-500" /> Made for modern builders
-            </span>
-          </div>
-        </footer>
-      </div>
-    );
+    // Auto-redirect to dashboard instead of showing landing page
+    setRoute("dashboard");
+    return null;
   }
 
   // 2. DASHBOARD VIEW & 3. OUTPUT WORKSPACE VIEWS
   const activePath = route === "dashboard" ? "~/dashboard" : `~/project/${activeProjectId?.slice(0, 8)}...`;
+
 
   return (
     <>
@@ -635,7 +519,6 @@ export default function App() {
                             "Market",
                             "Wireframe",
                             "Pitch Deck",
-                            "Landing Page",
                             "Market Study",
                           ] as TabType[]
                         ).map((tab) => {

@@ -11,7 +11,7 @@ export interface Project {
   agents: ProjectAgent[];
 }
 
-export type TabType = "Overview" | "Roadmap" | "Market" | "Wireframe" | "Pitch Deck" | "Landing Page" | "Market Study";
+export type TabType = "Overview" | "Roadmap" | "Market" | "Wireframe" | "Pitch Deck" | "Market Study";
 
 export interface ProjectHistoryItem {
   id: string;

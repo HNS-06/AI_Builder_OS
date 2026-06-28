@@ -1,12 +1,13 @@
 import asyncio
 import structlog
-from typing import TypedDict, Literal
+from typing import TypedDict
 from langgraph.graph import StateGraph, START, END
 from app.agents.founder import run_founder_agent
 from app.agents.pm import run_pm_agent
 from app.agents.uiux import run_uiux_agent
 from app.agents.marketing import run_marketing_agent
 from app.agents.investor import run_investor_agent
+from app.agents.market_analyst import run_market_analyst_agent
 from app.services.supabase import update_project_status
 
 logger = structlog.get_logger()
@@ -21,12 +22,13 @@ class PipelineState(TypedDict):
     pm_output: str
     uiux_output: str
     marketing_output: str
+    market_analyst_output: str
     investor_output: str
     error: str
 
 
 def parse_idea_node(state: PipelineState) -> dict:
-    """Extract domain and target users from the idea (lightweight LLM call or heuristics)."""
+    """Extract domain and target users from the idea (lightweight heuristics)."""
     idea = state["idea"].lower()
     domain = ""
     target_users = ""
@@ -34,7 +36,7 @@ def parse_idea_node(state: PipelineState) -> dict:
     domain_keywords = {
         "health": "Healthcare", "fitness": "Health & Fitness", "medical": "Healthcare",
         "education": "Education", "learning": "Education", "school": "Education",
-        "finance": "Fintech", "payment": "Fintech", "banking": "Fintech",
+        "finance": "Fintech", "payment": "Fintech", "banking": "Fintech", "invoice": "Fintech",
         "ecommerce": "E-Commerce", "shop": "E-Commerce", "store": "E-Commerce",
         "social": "Social Media", "community": "Social Media",
         "productivity": "Productivity", "task": "Productivity", "todo": "Productivity",
@@ -42,8 +44,11 @@ def parse_idea_node(state: PipelineState) -> dict:
         "food": "Food & Beverage", "delivery": "Logistics", "travel": "Travel",
         "gaming": "Gaming", "entertainment": "Entertainment",
         "real estate": "Real Estate", "rent": "Real Estate",
-        "saas": "SaaS", "b2b": "B2B SaaS",
+        "saas": "SaaS", "b2b": "B2B SaaS", "crm": "B2B SaaS",
         "attendance": "Education", "smart": "IoT/Smart Systems",
+        "hr": "HR Tech", "recruit": "HR Tech", "legal": "LegalTech",
+        "security": "Cybersecurity", "crypto": "Web3/Crypto", "blockchain": "Web3/Crypto",
+        "climate": "CleanTech", "energy": "CleanTech",
     }
     for kw, d in domain_keywords.items():
         if kw in idea:
@@ -57,6 +62,8 @@ def parse_idea_node(state: PipelineState) -> dict:
         "parent": "Parents", "business": "Business Owners", "developer": "Developers",
         "freelancer": "Freelancers", "remote": "Remote Workers", "small business": "SMBs",
         "enterprise": "Enterprise Teams", "consumer": "General Consumers",
+        "founder": "Startup Founders", "investor": "Investors", "manager": "Managers",
+        "doctor": "Healthcare Professionals", "patient": "Patients",
     }
     for kw, u in user_keywords.items():
         if kw in idea:
@@ -125,6 +132,20 @@ async def marketing_agent_node(state: PipelineState) -> dict:
         return {"error": f"Marketing agent failed: {e}"}
 
 
+async def market_analyst_agent_node(state: PipelineState) -> dict:
+    try:
+        output = await run_market_analyst_agent(
+            project_id=state["project_id"],
+            idea=state["idea"],
+            domain=state["domain"],
+            target_users=state["target_users"],
+            founder_output=state["founder_output"],
+        )
+        return {"market_analyst_output": output}
+    except Exception as e:
+        return {"error": f"Market Analyst agent failed: {e}"}
+
+
 async def investor_agent_node(state: PipelineState) -> dict:
     try:
         output = await run_investor_agent(
@@ -156,6 +177,7 @@ def build_graph() -> StateGraph:
     graph.add_node("pm", pm_agent_node)
     graph.add_node("uiux", uiux_agent_node)
     graph.add_node("marketing", marketing_agent_node)
+    graph.add_node("market_analyst", market_analyst_agent_node)
     graph.add_node("investor", investor_agent_node)
 
     graph.add_edge(START, "parse_idea")
@@ -170,7 +192,8 @@ def build_graph() -> StateGraph:
     )
     graph.add_edge("pm", "uiux")
     graph.add_edge("uiux", "marketing")
-    graph.add_edge("marketing", "investor")
+    graph.add_edge("marketing", "market_analyst")
+    graph.add_edge("market_analyst", "investor")
     graph.add_edge("investor", END)
 
     return graph
@@ -192,6 +215,7 @@ async def run_pipeline(project_id: str, idea: str) -> None:
             "pm_output": "",
             "uiux_output": "",
             "marketing_output": "",
+            "market_analyst_output": "",
             "investor_output": "",
             "error": "",
         })

@@ -88,6 +88,7 @@ async def stream_project(project_id: str, request: Request, token: str | None = 
                     yield data
 
                     parsed = json.loads(data.split("data: ", 1)[1].split("\n\n")[0])
+                    # investor is the final agent in the pipeline — close stream when it finishes
                     if parsed.get("done") and parsed.get("agent") == "investor":
                         break
                 else:

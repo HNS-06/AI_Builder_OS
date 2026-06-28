@@ -26,13 +26,15 @@ export default function OutputTab({
   const [wireframeSubView, setWireframeSubView] = useState<"doc" | "interactive">("doc");
   const [pitchSubView, setPitchSubView] = useState<"doc" | "simulator">("doc");
 
-  // Parse helper for splitting Pitch Deck and Landing Page from the Pitch Coach agent
+  // Parse helper — maps tab to the correct agent output
   const getTabContent = (): string => {
     switch (activeTab) {
       case "Overview":
         return project.agents.find((a) => a.name === "Venture Planner")?.output || "";
       case "Market":
-        return project.agents.find((a) => a.name === "Market Analyst")?.output || "";
+        // Market tab shows the dedicated Market Analyst agent output
+        return project.agents.find((a) => a.name === "Market Analyst")?.output || 
+               project.agents.find((a) => a.name === "Growth Strategist")?.output || "";
       case "Roadmap":
         return project.agents.find((a) => a.name === "Product Architect")?.output || "";
       case "Wireframe":
@@ -40,12 +42,7 @@ export default function OutputTab({
       case "Pitch Deck": {
         const coachOutput = project.agents.find((a) => a.name === "Pitch Coach")?.output || "";
         const parts = coachOutput.split(/## 2\.\s+Premium Landing Page Copy|###? Landing Page Copy/i);
-        return parts[0] || "";
-      }
-      case "Landing Page": {
-        const coachOutput = project.agents.find((a) => a.name === "Pitch Coach")?.output || "";
-        const parts = coachOutput.split(/## 2\.\s+Premium Landing Page Copy|###? Landing Page Copy/i);
-        return parts[1] ? `## Landing Page Copy\n${parts[1]}` : "";
+        return parts[0] || coachOutput;
       }
       default:
         return "";
@@ -58,10 +55,11 @@ export default function OutputTab({
   const getAgentStatus = () => {
     let agentName = "";
     if (activeTab === "Overview") agentName = "Venture Planner";
-    else if (activeTab === "Market" || activeTab === "Market Study") agentName = "Market Analyst";
+    else if (activeTab === "Market") agentName = "Market Analyst";
+    else if (activeTab === "Market Study") agentName = "Market Analyst";
     else if (activeTab === "Roadmap") agentName = "Product Architect";
     else if (activeTab === "Wireframe") agentName = "UX Designer";
-    else if (activeTab === "Pitch Deck" || activeTab === "Landing Page") agentName = "Pitch Coach";
+    else if (activeTab === "Pitch Deck") agentName = "Pitch Coach";
 
     const agent = project.agents.find((a) => a.name === agentName);
     return agent ? agent.status : "waiting";
