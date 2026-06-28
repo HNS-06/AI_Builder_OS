@@ -105,6 +105,7 @@ async def pm_agent_node(state: PipelineState) -> dict:
 
 async def uiux_agent_node(state: PipelineState) -> dict:
     try:
+        await asyncio.sleep(2)  # Pace to prevent Groq TPM limit
         output = await run_uiux_agent(
             project_id=state["project_id"],
             idea=state["idea"],
@@ -119,6 +120,7 @@ async def uiux_agent_node(state: PipelineState) -> dict:
 
 async def marketing_agent_node(state: PipelineState) -> dict:
     try:
+        await asyncio.sleep(2)  # Pace to prevent Groq TPM limit
         output = await run_marketing_agent(
             project_id=state["project_id"],
             idea=state["idea"],
@@ -134,6 +136,7 @@ async def marketing_agent_node(state: PipelineState) -> dict:
 
 async def market_analyst_agent_node(state: PipelineState) -> dict:
     try:
+        await asyncio.sleep(2)  # Pace to prevent Groq TPM limit
         output = await run_market_analyst_agent(
             project_id=state["project_id"],
             idea=state["idea"],
@@ -148,6 +151,7 @@ async def market_analyst_agent_node(state: PipelineState) -> dict:
 
 async def investor_agent_node(state: PipelineState) -> dict:
     try:
+        await asyncio.sleep(2)  # Pace to prevent Groq TPM limit
         output = await run_investor_agent(
             project_id=state["project_id"],
             idea=state["idea"],

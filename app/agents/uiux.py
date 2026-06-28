@@ -61,7 +61,7 @@ Produce the UI/UX design brief for this product."""
 
     full_output = ""
     try:
-        async for text in stream_completion(UIUX_SYSTEM_PROMPT, user_msg, preferred_provider="gemini"):
+        async for text in stream_completion(UIUX_SYSTEM_PROMPT, user_msg, preferred_provider="groq"):
             full_output += text
             await push_chunk(project_id, agent_name, text, done=False)
 

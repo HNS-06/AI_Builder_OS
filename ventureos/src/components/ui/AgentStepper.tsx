@@ -37,6 +37,13 @@ export default function AgentStepper({ agents }: AgentStepperProps) {
           activeSub: "Constructing Swiss layouts...",
           waitingSub: "Awaiting product spec verification"
         };
+      case "Growth Strategist":
+        return {
+          title: "Growth Strategist",
+          sub: "GTM plan finalized",
+          activeSub: "Formulating acquisition loops...",
+          waitingSub: "Awaiting UX guidelines"
+        };
       case "Pitch Coach":
         return {
           title: "Investor Liaison",
