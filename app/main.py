@@ -1,7 +1,6 @@
 import structlog
 import httpx
 from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from jose import jwt, JWTError
 from jose.exceptions import JWKError
@@ -48,6 +47,56 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Trusted origin patterns — supports exact matches and suffix wildcards (e.g. .vercel.app)
+ALLOWED_ORIGIN_PATTERNS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+    ".vercel.app",
+    ".onrender.com",
+] + settings.cors_origins
+
+
+def _is_origin_allowed(origin: str) -> bool:
+    """Check if the request origin matches any allowed origin or suffix pattern."""
+    for pattern in ALLOWED_ORIGIN_PATTERNS:
+        if pattern.startswith("."):
+            # Wildcard suffix match — e.g. ".vercel.app" matches any *.vercel.app
+            if origin.endswith(pattern) or origin == pattern[1:]:
+                return True
+        else:
+            if origin == pattern:
+                return True
+    return False
+
+
+@app.middleware("http")
+async def cors_middleware(request: Request, call_next):
+    origin = request.headers.get("origin", "")
+    allowed = _is_origin_allowed(origin)
+
+    # Handle preflight OPTIONS request
+    if request.method == "OPTIONS":
+        headers = {
+            "Access-Control-Allow-Origin": origin if allowed else "",
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+            "Access-Control-Allow-Headers": "Authorization, Content-Type, Accept, Origin, X-Requested-With",
+            "Access-Control-Max-Age": "600",
+        }
+        return JSONResponse(status_code=200, content={}, headers=headers)
+
+    response = await call_next(request)
+
+    if allowed and origin:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+        response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, Accept, Origin, X-Requested-With"
+
+    return response
+
 
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next):
@@ -92,15 +141,6 @@ async def auth_middleware(request: Request, call_next):
 
     response = await call_next(request)
     return response
-
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 app.include_router(generate.router)
