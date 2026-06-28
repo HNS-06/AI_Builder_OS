@@ -1,7 +1,7 @@
 import { getCurrentToken } from "./supabase";
 
 export const BACKEND_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:8000";
+  (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
 
 export async function getAuthHeader(): Promise<Record<string, string>> {
   const token = await getCurrentToken();

@@ -154,9 +154,8 @@ async def investor_agent_node(state: PipelineState) -> dict:
             domain=state["domain"],
             target_users=state["target_users"],
             founder_output=state["founder_output"],
-            pm_output=state["pm_output"],
-            uiux_output=state["uiux_output"],
             marketing_output=state["marketing_output"],
+            market_analyst_output=state["market_analyst_output"],
         )
         return {"investor_output": output}
     except Exception as e:

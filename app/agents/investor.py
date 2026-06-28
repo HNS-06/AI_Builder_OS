@@ -50,9 +50,8 @@ async def run_investor_agent(
     domain: str,
     target_users: str,
     founder_output: str,
-    pm_output: str,
-    uiux_output: str,
     marketing_output: str,
+    market_analyst_output: str,
 ) -> str:
     agent_name = AgentName.INVESTOR
 
@@ -66,14 +65,11 @@ Target Users: {target_users}
 --- FOUNDER ANALYSIS ---
 {founder_output}
 
---- PM MVP PLAN ---
-{pm_output}
-
---- UI/UX DESIGN BRIEF ---
-{uiux_output}
-
 --- MARKETING STRATEGY ---
 {marketing_output}
+
+--- MARKET ANALYST DATA ---
+{market_analyst_output}
 
 Produce a SPECIFIC investor pitch summary grounded in all analyses above. Reference this exact startup idea in every section. Avoid generic pitch advice — every sentence must be tied to this specific product, market, and competitive landscape."""
 
