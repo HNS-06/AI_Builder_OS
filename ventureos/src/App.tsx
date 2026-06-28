@@ -185,6 +185,10 @@ export default function App() {
         }
       } catch (err) {
         console.error("Failed to fetch venture record:", err);
+        setProject(null);
+        setActiveProjectId(undefined);
+        setRoute("landing");
+        window.location.hash = "#/";
       }
     };
 
