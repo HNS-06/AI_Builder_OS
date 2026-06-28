@@ -8,33 +8,38 @@ logger = structlog.get_logger()
 async def stream_completion(
     system_prompt: str,
     user_message: str,
+    preferred_provider: str = None,
 ) -> AsyncGenerator[str, None]:
-    """Stream text from Groq (primary) with Gemini fallback.
+    """Stream text from Groq or Gemini based on preference and availability.
 
     Yields text chunks as they arrive from the LLM.
     """
     settings = get_settings()
 
-    # --- Try Groq first ---
-    if settings.groq_api_key:
-        try:
-            async for chunk in _stream_groq(settings, system_prompt, user_message):
-                yield chunk
-            return
-        except Exception as e:
-            logger.warning("groq_fallback_triggered", error=str(e))
+    # Determine order of providers to try
+    providers = ["groq", "gemini"]
+    if preferred_provider == "gemini":
+        providers = ["gemini", "groq"]
+    elif preferred_provider == "groq":
+        providers = ["groq", "gemini"]
 
-    # --- Fallback to Gemini ---
-    if settings.gemini_api_key:
-        try:
-            async for chunk in _stream_gemini(settings, system_prompt, user_message):
-                yield chunk
-            return
-        except Exception as e:
-            logger.error("gemini_failed", error=str(e))
-            raise RuntimeError(f"All LLM providers failed. Groq unavailable, Gemini error: {e}")
+    for provider in providers:
+        if provider == "groq" and settings.groq_api_key:
+            try:
+                async for chunk in _stream_groq(settings, system_prompt, user_message):
+                    yield chunk
+                return
+            except Exception as e:
+                logger.warning("groq_completion_failed", error=str(e))
+        elif provider == "gemini" and settings.gemini_api_key:
+            try:
+                async for chunk in _stream_gemini(settings, system_prompt, user_message):
+                    yield chunk
+                return
+            except Exception as e:
+                logger.warning("gemini_completion_failed", error=str(e))
 
-    raise RuntimeError("No LLM provider configured. Set GROQ_API_KEY or GEMINI_API_KEY.")
+    raise RuntimeError("No configured LLM providers succeeded or are available.")
 
 
 async def _stream_groq(

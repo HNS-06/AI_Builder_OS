@@ -1,0 +1,271 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Geist", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-space: "Space Grotesk", sans-serif;
+  --font-syne: "Syne", sans-serif;
+}
+
+/* Global resets for VentureOS premium theme */
+body {
+  background-color: #0A0A0A;
+  color: #F2F2F0;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar styling for that high-end SaaS feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0A0A0A;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Dynamic glow effect */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.25;
+    transform: scale(1.05);
+  }
+}
+
+.glowing-orb {
+  animation: pulseGlow 10s ease-in-out infinite;
+}
+
+/* Smooth fade-in-up classes for micro-interactions */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Terminal typing cursor effect */
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.terminal-cursor {
+  display: inline-block;
+  width: 6px;
+  height: 14px;
+  background-color: #7C6EF8;
+  margin-left: 2px;
+  animation: blink 1s step-end infinite;
+}
+
+/* Custom styles for React Markdown outputs */
+.markdown-body {
+  font-family: var(--font-sans);
+  color: #D4D4D8;
+  line-height: 1.7;
+}
+
+.markdown-body h1 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: #F2F2F0;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 0.5rem;
+}
+
+.markdown-body h2 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: #E4E4E7;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-body h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #D4D4D8;
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.markdown-body p {
+  margin-bottom: 1rem;
+}
+
+.markdown-body ul, .markdown-body ol {
+  margin-bottom: 1rem;
+  padding-left: 1.25rem;
+  list-style-type: disc;
+}
+
+.markdown-body li {
+  margin-bottom: 0.35rem;
+}
+
+.markdown-body code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background-color: rgba(255, 255, 255, 0.04);
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.markdown-body pre {
+  background-color: #050505;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin-bottom: 1.25rem;
+}
+
+.markdown-body pre code {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  font-size: 0.85rem;
+  color: #A1A1AA;
+}
+
+/* Print Container default state (hidden in browser UI) */
+.print-container {
+  display: none;
+}
+
+/* Print styles for generating premium PDF reports */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+  }
+  
+  #root > :not(.print-container) {
+    display: none !important;
+  }
+  
+  .print-container {
+    display: block !important;
+    color: #111827 !important;
+    background-color: #ffffff !important;
+    padding: 3rem !important;
+  }
+  
+  .print-container h1,
+  .print-container h2,
+  .print-container h3,
+  .print-container p,
+  .print-container li,
+  .print-container span {
+    color: #111827 !important;
+  }
+  
+  .print-container .markdown-body {
+    color: #1f2937 !important;
+  }
+  
+  .print-container .markdown-body h1 {
+    color: #111827 !important;
+    border-bottom: 2px solid #e5e7eb !important;
+    font-size: 2.25rem !important;
+    margin-top: 2.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+  
+  .print-container .markdown-body h2 {
+    color: #1f2937 !important;
+    font-size: 1.5rem !important;
+    margin-top: 2rem !important;
+    border-bottom: 1px solid #f3f4f6 !important;
+    padding-bottom: 0.25rem !important;
+  }
+  
+  .print-container .markdown-body h3 {
+    color: #374151 !important;
+    font-size: 1.2rem !important;
+    margin-top: 1.5rem !important;
+  }
+
+  .print-container .markdown-body p {
+    color: #374151 !important;
+    font-size: 1rem !important;
+    line-height: 1.6 !important;
+  }
+
+  .print-container .markdown-body li {
+    color: #374151 !important;
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .print-container .markdown-body pre {
+    background-color: #f9fafb !important;
+    border: 1px solid #e5e7eb !important;
+    color: #1f2937 !important;
+    padding: 1rem !important;
+    border-radius: 6px !important;
+    page-break-inside: avoid !important;
+  }
+
+  .print-container .markdown-body pre code {
+    color: #1f2937 !important;
+  }
+
+  .print-container .markdown-body code {
+    background-color: #f3f4f6 !important;
+    border: 1px solid #e5e7eb !important;
+    color: #1f2937 !important;
+    font-size: 0.9em !important;
+  }
+
+  .print-page-break {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+}
+
+/* Utility to hide scrollbars for touch/overflow menus */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+

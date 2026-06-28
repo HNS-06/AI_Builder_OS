@@ -57,7 +57,7 @@ Produce the founder analysis for this startup idea."""
 
     full_output = ""
     try:
-        async for text in stream_completion(FOUNDER_SYSTEM_PROMPT, user_msg):
+        async for text in stream_completion(FOUNDER_SYSTEM_PROMPT, user_msg, preferred_provider="groq"):
             full_output += text
             await push_chunk(project_id, agent_name, text, done=False)
 

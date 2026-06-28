@@ -48,18 +48,23 @@ app = FastAPI(
     version="1.0.0",
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next):
+    if request.method == "OPTIONS":
+        return await call_next(request)
+
     if request.url.path in ("/docs", "/openapi.json", "/redoc", "/health"):
+        return await call_next(request)
+
+    # Demo mode: skip auth entirely, assign a fixed demo user
+    if settings.demo_mode:
+        request.state.user_id = "demo-user-000"
+        return await call_next(request)
+
+    # Stream endpoint handles its own auth via token query param
+    # (EventSource cannot send custom headers)
+    if request.url.path.startswith("/api/stream/"):
         return await call_next(request)
 
     auth_header = request.headers.get("Authorization", "")
@@ -87,6 +92,15 @@ async def auth_middleware(request: Request, call_next):
 
     response = await call_next(request)
     return response
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 app.include_router(generate.router)
