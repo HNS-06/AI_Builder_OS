@@ -3,7 +3,7 @@ import structlog
 from app.models.schemas import AgentName
 from app.services.llm import stream_completion
 from app.services.local_ai import generate_investor as local_generate_investor
-from app.services.streaming import push_chunk
+from app.services.streaming import push_chunk, push_status
 from app.services.supabase import create_agent_output, update_agent_output, set_agent_error
 
 logger = structlog.get_logger()
@@ -57,6 +57,7 @@ async def run_investor_agent(
     agent_name = AgentName.INVESTOR
 
     await create_agent_output(project_id, agent_name.value)
+    await push_status(project_id, agent_name, "running")
     start = time.time()
 
     user_msg = f"""STARTUP IDEA: "{idea}"
@@ -89,11 +90,13 @@ Produce a SPECIFIC investor pitch summary grounded in all analyses above. Refere
         elapsed = time.time() - start
         logger.info("investor_done", project_id=project_id, elapsed=f"{elapsed:.1f}s", tokens=len(full_output))
         await update_agent_output(project_id, agent_name.value, full_output, "done")
+        await push_status(project_id, agent_name, "done")
         await push_chunk(project_id, agent_name, "", done=True)
 
     except Exception as e:
         logger.error("investor_error", project_id=project_id, error=str(e))
         await set_agent_error(project_id, agent_name.value, str(e))
+        await push_status(project_id, agent_name, "error")
         await push_chunk(project_id, agent_name, "", done=True)
         raise
 

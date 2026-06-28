@@ -34,3 +34,25 @@ async def push_chunk(project_id: str, agent: AgentName, chunk: str, done: bool) 
             await q.put(raw)
         except Exception:
             pass
+
+
+async def push_status(project_id: str, agent: AgentName, status: str) -> None:
+    """Push a real-time status update for an agent (waiting/running/done/error)."""
+    payload = json.dumps({"type": "status", "agent": agent.value, "status": status})
+    raw = f"data: {payload}\n\n"
+    for q in _project_queues.get(project_id, []):
+        try:
+            await q.put(raw)
+        except Exception:
+            pass
+
+
+async def push_complete(project_id: str) -> None:
+    """Push a project completion event to all connected clients."""
+    payload = json.dumps({"type": "complete"})
+    raw = f"data: {payload}\n\n"
+    for q in _project_queues.get(project_id, []):
+        try:
+            await q.put(raw)
+        except Exception:
+            pass

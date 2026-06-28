@@ -9,6 +9,7 @@ from app.agents.marketing import run_marketing_agent
 from app.agents.investor import run_investor_agent
 from app.agents.market_analyst import run_market_analyst_agent
 from app.services.supabase import update_project_status
+from app.services.streaming import push_complete
 
 logger = structlog.get_logger()
 
@@ -228,6 +229,7 @@ async def run_pipeline(project_id: str, idea: str) -> None:
             logger.error("pipeline_error", project_id=project_id, error=result["error"])
         else:
             await update_project_status(project_id, "done")
+            await push_complete(project_id)
             logger.info("pipeline_complete", project_id=project_id)
 
     except Exception as e:

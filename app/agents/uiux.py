@@ -3,7 +3,7 @@ import structlog
 from app.models.schemas import AgentName
 from app.services.llm import stream_completion
 from app.services.local_ai import generate_uiux as local_generate_uiux
-from app.services.streaming import push_chunk
+from app.services.streaming import push_chunk, push_status
 from app.services.supabase import create_agent_output, update_agent_output, set_agent_error
 
 logger = structlog.get_logger()
@@ -49,6 +49,7 @@ async def run_uiux_agent(
     agent_name = AgentName.UIUX
 
     await create_agent_output(project_id, agent_name.value)
+    await push_status(project_id, agent_name, "running")
     start = time.time()
 
     user_msg = f"""Startup Idea: {idea}
@@ -75,11 +76,13 @@ Produce the UI/UX design brief for this product."""
         elapsed = time.time() - start
         logger.info("uiux_done", project_id=project_id, elapsed=f"{elapsed:.1f}s", tokens=len(full_output))
         await update_agent_output(project_id, agent_name.value, full_output, "done")
+        await push_status(project_id, agent_name, "done")
         await push_chunk(project_id, agent_name, "", done=True)
 
     except Exception as e:
         logger.error("uiux_error", project_id=project_id, error=str(e))
         await set_agent_error(project_id, agent_name.value, str(e))
+        await push_status(project_id, agent_name, "error")
         await push_chunk(project_id, agent_name, "", done=True)
         raise
 
